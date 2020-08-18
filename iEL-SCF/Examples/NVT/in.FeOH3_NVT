@@ -1,0 +1,29 @@
+# REAX potential for elecrtrochemistry H2O CU systems
+# .....
+
+units real
+
+boundary p p p
+atom_style charge
+read_data data.FeOH3
+
+pair_style reax/c NULL safezone 1.6
+pair_coeff * * ffield.reax.Fe_O_C_H H O Fe
+
+neighbor 2.5 bin
+neigh_modify every 10 delay 0 check no
+
+fix 3 all property/atom d_t_EL_Scf d_vt_EL_Scf d_at_EL_Scf d_s_EL_Scf d_vs_EL_Scf d_as_EL_Scf d_s d_t ghost yes
+
+thermo_style custom step etotal pe ke temp
+thermo 1000
+
+timestep 0.25
+
+dump 1 all custom 10000 dump.lammpstrj type q d_s d_t d_s_EL_Scf d_t_EL_Scf d_vs_EL_Scf d_vt_EL_Scf vx vy vz x y z
+dump_modify 1 sort id
+
+fix 1 all nvt temp 300.0 300.0 100 1 1 2 10.0 1.0e-6 1.0e-5 1.0 1.0
+fix 2 all qeq/reax 1 0.0 10.0 1e-3 1e-3 reax/c 1 1 0 0 1 1
+
+run 4000000 
